@@ -1,4 +1,4 @@
-From 5c98ab63399af4b244d41a9209237748e321aea4 Mon Sep 17 00:00:00 2001
+From 515090681ed50bbb346ade8dfc5288f7e0949526 Mon Sep 17 00:00:00 2001
 From: Alvin Sun <alvinsunyixiao@gmail.com>
 Date: Fri, 1 Jul 2022 13:18:56 -0700
 Subject: [PATCH 3/6] remove cmake sets
@@ -8,7 +8,7 @@ Subject: [PATCH 3/6] remove cmake sets
  1 file changed, 8 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 16db0e1..8c84ab3 100644
+index 16db0e1da011..8c84ab34b6e7 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -20,14 +20,6 @@ include(OptionRequires)
@@ -27,5 +27,5 @@ index 16db0e1..8c84ab3 100644
  	# If you're using this as a subproject and want things installed, set VRPN_INSTALL TRUE.
  	set(SUBPROJECT TRUE)
 -- 
-2.43.0
+2.49.0
 

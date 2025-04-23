@@ -1,4 +1,4 @@
-From 0af4c9831f4d018426495f979bd62d5d46a885ad Mon Sep 17 00:00:00 2001
+From 358301cb68d6b50ecb00e64c22c69a6021ba0900 Mon Sep 17 00:00:00 2001
 From: Alvin Sun <alvinsunyixiao@gmail.com>
 Date: Sat, 18 May 2024 16:53:35 -0700
 Subject: [PATCH 6/6] deprecate CMAKE_HAVE_THREADS_LIBRARY
@@ -8,7 +8,7 @@ Subject: [PATCH 6/6] deprecate CMAKE_HAVE_THREADS_LIBRARY
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/cmake/FindVRPN.cmake b/cmake/FindVRPN.cmake
-index 641b62b..b121481 100644
+index 641b62b70ea6..b12148116bc5 100644
 --- a/cmake/FindVRPN.cmake
 +++ b/cmake/FindVRPN.cmake
 @@ -112,7 +112,7 @@ list(APPEND _deps_check QUATLIB_FOUND)
@@ -21,5 +21,5 @@ index 641b62b..b121481 100644
  
  if(WIN32)
 -- 
-2.43.0
+2.49.0
 

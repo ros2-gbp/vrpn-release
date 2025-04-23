@@ -1,4 +1,4 @@
-From ddd1c425e1059b7400ce199cc5905a629e5eb547 Mon Sep 17 00:00:00 2001
+From e5b4a5eed2d1496cd1ee9cc941199b6f7a045d5f Mon Sep 17 00:00:00 2001
 From: Alvin Sun <alvinsunyixiao@gmail.com>
 Date: Thu, 30 Jun 2022 20:46:29 -0700
 Subject: [PATCH 1/6] also install cmake config
@@ -8,7 +8,7 @@ Subject: [PATCH 1/6] also install cmake config
  1 file changed, 19 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 2ee42ba..169f812 100644
+index 2ee42baec4ba..169f812cdbc9 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -20,6 +20,14 @@ include(OptionRequires)
@@ -42,5 +42,5 @@ index 2ee42ba..169f812 100644
 +        DESTINATION share/quatlib/cmake
 +        RENAME quatlibConfig.cmake)
 -- 
-2.43.0
+2.49.0
 

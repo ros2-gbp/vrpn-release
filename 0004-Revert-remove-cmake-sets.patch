@@ -1,4 +1,4 @@
-From 473f667e8bc8828ea9f96b831099cc7220604ae1 Mon Sep 17 00:00:00 2001
+From 957d691840ccda407e669a6b0a451135df739793 Mon Sep 17 00:00:00 2001
 From: Alvin Sun <alvinsunyixiao@gmail.com>
 Date: Fri, 1 Jul 2022 15:27:58 -0700
 Subject: [PATCH 4/6] Revert "remove cmake sets"
@@ -9,7 +9,7 @@ This reverts commit b5435aaa0b8730309c132cee7ef87627e1845c11.
  1 file changed, 8 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8c84ab3..16db0e1 100644
+index 8c84ab34b6e7..16db0e1da011 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -20,6 +20,14 @@ include(OptionRequires)
@@ -28,5 +28,5 @@ index 8c84ab3..16db0e1 100644
  	# If you're using this as a subproject and want things installed, set VRPN_INSTALL TRUE.
  	set(SUBPROJECT TRUE)
 -- 
-2.43.0
+2.49.0
 
