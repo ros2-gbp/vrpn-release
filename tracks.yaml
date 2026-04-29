@@ -156,7 +156,7 @@ tracks:
     last_version: 7.35.0
     name: upstream
     patches: foxy
-    release_inc: '20'
+    release_inc: '21'
     release_repo_url: null
     release_tag: version_07.35
     ros_distro: rolling
