@@ -1,4 +1,4 @@
-From 1c738858bb1ba5e9e63ee1c0527716f54f145c90 Mon Sep 17 00:00:00 2001
+From e8c94df595869478c88628877915b79cce01ac82 Mon Sep 17 00:00:00 2001
 From: Alvin Sun <alvinsunyixiao@gmail.com>
 Date: Thu, 30 Jun 2022 23:14:30 -0700
 Subject: [PATCH 2/6] set options with cache
@@ -8,7 +8,7 @@ Subject: [PATCH 2/6] set options with cache
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 169f812..16db0e1 100644
+index 169f812cdbc9..16db0e1da011 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -20,12 +20,12 @@ include(OptionRequires)
@@ -31,5 +31,5 @@ index 169f812..16db0e1 100644
  
  if((NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) OR VRPN_SUBPROJECT_BUILD)
 -- 
-2.43.0
+2.53.0
 
