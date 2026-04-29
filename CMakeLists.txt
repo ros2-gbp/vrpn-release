@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 2.8.3)
 project(VRPN)
 
 #-----------------------------------------------------------------------------
@@ -19,15 +19,6 @@ include(SetDefaultBuildType)
 include(OptionRequires)
 include(CTest)
 include(CheckIncludeFileCXX)
-
-set(VRPN_BUILD_CLIENT_LIBRARY TRUE CACHE BOOL "build client library")
-set(VRPN_BUILD_JAVA FALSE CACHE BOOL "do not build java")
-set(VRPN_BUILD_PYTHON FALSE CACHE BOOL "do not build python")
-set(VRPN_BUILD_PYTHON_HANDCODED_2X FALSE CACHE BOOL "do not build python2 handcoded bindings")
-set(VRPN_BUILD_PYTHON_HANDCODED_3X FALSE CACHE BOOL "do not build python3 handcoded bindings")
-set(VRPN_BUILD_CLIENTS FALSE CACHE BOOL "do not build clients")
-set(VRPN_BUILD_SERVERS FALSE CACHE BOOL "do not build servers")
-set(VRPN_BUILD_SERVER_LIBRARY FALSE CACHE BOOL "do not build server library")
 
 if((NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) OR VRPN_SUBPROJECT_BUILD)
 	# If you're using this as a subproject and want things installed, set VRPN_INSTALL TRUE.
@@ -1572,14 +1563,3 @@ if(VRPN_INSTALL)
 	cpack_add_component(java DISPLAY_NAME "Java bindings")
 	cpack_add_component(doc DISPLAY_NAME "C++ API Documentation")
 endif()
-
-# install ament package.xml
-install(FILES package.xml DESTINATION share/vrpn)
-
-install(FILES cmake/FindVRPN.cmake
-        DESTINATION share/vrpn/cmake
-        RENAME VRPNConfig.cmake)
-
-install(FILES cmake/Findquatlib.cmake
-        DESTINATION share/quatlib/cmake
-        RENAME quatlibConfig.cmake)
