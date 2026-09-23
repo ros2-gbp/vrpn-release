@@ -102,11 +102,11 @@ tracks:
     patches: foxy
     release_inc: '18'
     release_repo_url: null
-    release_tag: version_07.35
+    release_tag: version_07.36
     ros_distro: jazzy
     vcs_type: git
     vcs_uri: https://github.com/vrpn/vrpn.git
-    version: 7.35.0
+    version: 7.36.0
   kilted:
     actions:
     - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
@@ -129,11 +129,11 @@ tracks:
     patches: foxy
     release_inc: '21'
     release_repo_url: null
-    release_tag: version_07.35
+    release_tag: version_07.36
     ros_distro: kilted
     vcs_type: git
     vcs_uri: https://github.com/vrpn/vrpn.git
-    version: 7.35.0
+    version: 7.36.0
   lyrical:
     actions:
     - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
@@ -158,11 +158,11 @@ tracks:
     patches: foxy
     release_inc: '22'
     release_repo_url: null
-    release_tag: version_07.35
+    release_tag: version_07.36
     ros_distro: lyrical
     vcs_type: git
     vcs_uri: https://github.com/vrpn/vrpn.git
-    version: 7.35.0
+    version: 7.36.0
   rolling:
     actions:
     - bloom-export-upstream :{vcs_local_uri} :{vcs_type} --tag :{release_tag} --display-uri
@@ -187,8 +187,8 @@ tracks:
     patches: foxy
     release_inc: '21'
     release_repo_url: null
-    release_tag: version_07.35
+    release_tag: version_07.36
     ros_distro: rolling
     vcs_type: git
     vcs_uri: https://github.com/vrpn/vrpn.git
-    version: 7.35.0
+    version: 7.36.0
