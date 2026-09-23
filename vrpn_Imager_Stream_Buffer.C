@@ -19,7 +19,7 @@ vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer(
         d_connection = NULL;
         return;
     }
-    strcpy(d_imager_server_name, imager_server_name);
+    vrpn_strncpynull(d_imager_server_name, imager_server_name, strlen(imager_server_name) + 1);
 
     // Create the logging thread but do not run it yet.
     vrpn_ThreadData td;
@@ -584,7 +584,7 @@ int vrpn_Imager_Stream_Buffer::handle_server_messages(
         tp.type = d_server_text_m_id;
         tp.buffer = buffer;
         tp.payload_len = sizeof(buffer);
-        sprintf(msg, "Unknown message type from server: %d",
+        snprintf(msg, vrpn_MAX_TEXT_LEN, "Unknown message type from server: %d",
                 static_cast<int>(p.type));
         encode_text_message_to_buffer(buffer, vrpn_TEXT_ERROR, 0, msg);
         if (!transcode_and_send(tp)) {
@@ -738,7 +738,7 @@ bool vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_connection(
     // that they will do what needs doing; the callbacks point to the
     // Imager_Stream_Buffer object, not to the imager_remote object; access it
     // through the member variable pointer.
-    d_imager_remote = new vrpn_Imager_Remote(d_imager_server_name, c);
+    d_imager_remote = new(std::nothrow) vrpn_Imager_Remote(d_imager_server_name, c);
     if (d_imager_remote == NULL) {
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_"
                         "connection(): Cannot create vrpn_Imager_Remote\n");
