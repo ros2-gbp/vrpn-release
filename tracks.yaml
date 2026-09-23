@@ -96,11 +96,11 @@ tracks:
     - git-bloom-generate -y rosrpm --prefix release/:{ros_distro} :{ros_distro} -i
       :{release_inc} --os-name rhel
     devel_branch: null
-    last_release: version_07.35
-    last_version: 7.35.0
+    last_release: version_07.36
+    last_version: 7.36.0
     name: upstream
     patches: foxy
-    release_inc: '18'
+    release_inc: '1'
     release_repo_url: null
     release_tag: version_07.36
     ros_distro: jazzy
