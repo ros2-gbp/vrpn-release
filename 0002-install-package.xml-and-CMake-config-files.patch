@@ -1,0 +1,36 @@
+From d80d5871dd649013c2146307f4277a615f4ca43f Mon Sep 17 00:00:00 2001
+From: Alvin Sun <alvinsunyixiao@gmail.com>
+Date: Wed, 23 Sep 2026 16:55:49 -0700
+Subject: [PATCH 2/2] install package.xml and CMake config files
+
+Install package.xml and expose FindVRPN.cmake / Findquatlib.cmake as
+VRPNConfig.cmake / quatlibConfig.cmake so downstream packages can use
+find_package(VRPN).
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+---
+ CMakeLists.txt | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a2c4351..39183e7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1573,3 +1573,14 @@ if(VRPN_INSTALL)
+ 	cpack_add_component(java DISPLAY_NAME "Java bindings")
+ 	cpack_add_component(doc DISPLAY_NAME "C++ API Documentation")
+ endif()
++
++# install ament package.xml
++install(FILES package.xml DESTINATION share/vrpn)
++
++install(FILES cmake/FindVRPN.cmake
++        DESTINATION share/vrpn/cmake
++        RENAME VRPNConfig.cmake)
++
++install(FILES cmake/Findquatlib.cmake
++        DESTINATION share/quatlib/cmake
++        RENAME quatlibConfig.cmake)
+-- 
+2.55.0
+
