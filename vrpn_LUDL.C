@@ -18,7 +18,7 @@ VRPN_SUPPRESS_EMPTY_OBJECT_WARNING()
 
 #if defined(VRPN_USE_LIBUSB_1_0)
 
-#include <stdio.h>                      // for fprintf, stderr, sprintf, etc
+#include <stdio.h>                      // for fprintf, stderr, snprintf, etc
 #include <string.h>                     // for NULL, memset, strlen
 
 #include "libusb.h"
@@ -293,7 +293,7 @@ bool vrpn_LUDL_USBMAC6000::send_usbmac_command(unsigned device, unsigned command
   libusb_handle_events_timeout(_context, &zerotime);
 
   char msg[1024];
-  sprintf(msg, "can %u %u %u %i\n", device, command, index, value);
+  snprintf(msg, 1024, "can %u %u %u %i\n", device, command, index, value);
   int len = strlen(msg);
   int sent_len = 0;
   msg[len-1] = 0xD;
@@ -331,7 +331,7 @@ bool vrpn_LUDL_USBMAC6000::interpret_usbmac_ascii_response(const vrpn_uint8 *buf
 
   char acolon[32], can[32];
   int device = 0, command = 0, index = 0, value = 0;
-  if (sscanf(charbuf, "%s  %s %i %i %i %i", acolon, can, &device, &command, &index, &value) <= 0) {
+  if (sscanf(charbuf, "%31s  %31s %i %i %i %i", acolon, can, &device, &command, &index, &value) <= 0) {
     REPORT_ERROR("vrpn_LUDL_USBMAC6000::interpret_usbmac_ascii_response(): Could not parse response");
     return false;
   }
@@ -586,7 +586,7 @@ int vrpn_LUDL_USBMAC6000::handle_request_message(void *userdata, vrpn_HANDLERPAR
     // range of the ones we have.
     if ( (chan_num < 0) || (chan_num >= me->o_num_channel) ) {
       char msg[1024];
-      sprintf(msg,"vrpn_LUDL_USBMAC6000::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
+      snprintf(msg, 1024,"vrpn_LUDL_USBMAC6000::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
 	chan_num, me->o_num_channel, value);
       me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
       return 0;
@@ -609,7 +609,7 @@ int vrpn_LUDL_USBMAC6000::handle_request_channels_message(void* userdata, vrpn_H
     vrpn_unbuffer(&bufptr, &pad);
     if (num > me->o_num_channel) {
       char msg[1024];
-      sprintf(msg,"vrpn_LUDL_USBMAC6000::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
+      snprintf(msg, 1024,"vrpn_LUDL_USBMAC6000::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
 	num, me->o_num_channel);
       me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
       num = me->o_num_channel;
