@@ -326,7 +326,6 @@ void vrpn_Tracker_G4::DoBoresightCmd(char *scmd)
 	char eol[] = "\r\n";
 	char comma[] = ",";
 	char *pArgs = scmd;
-	//strcpy(pArgs, scmd);
 
 	char *pAct=NULL;
 	char *pHub=NULL; 
@@ -674,7 +673,6 @@ void vrpn_Tracker_G4::DoIncrementCmd(char *scmd)
 	char eol[] = "\r\n";
 	char comma[] = ",";
 	char *pArgs = &scmd[1];
-	//strcpy(pArgs, scmd);
 
 	char *pAct=NULL;
 	char *pHub=NULL; 
@@ -779,7 +777,6 @@ void vrpn_Tracker_G4::DoTipOffsetCmd(char *scmd)
 	char eol[] = "\r\n";
 	char comma[] = ",";
 	char *pArgs = &scmd[1];
-	//strcpy(pArgs, scmd);
 
 	char *pAct=NULL;
 	char *pHub=NULL; 
@@ -1174,7 +1171,7 @@ BOOL vrpn_Tracker_FastrakPDI::InitStylusBtns()
 		if (((1<<i) & m_nStylusMap) != 0)
 		{
 			char btnName[512];
-			sprintf( btnName, "%sStylus%d", d_servicename, i+1);
+			snprintf( btnName, 512, "%.450sStylus%d", d_servicename, i+1);
 			try { FTstylusBtns[i] = new vrpn_Button_Server( btnName, d_connection, 1 ); }
 			catch (...)
 			{
@@ -1742,7 +1739,7 @@ BOOL vrpn_Tracker_LibertyPDI::InitStylusBtns()
 		if (((1<<i) & m_nStylusMap) != 0)
 		{
 			char btnName[512];
-			sprintf( btnName, "%sStylus%d", d_servicename, i+1);
+			snprintf( btnName, 512, "%.450sStylus%d", d_servicename, i+1);
 			try { StylusBtns[i] = new vrpn_Button_Server( btnName, d_connection, 1 ); }
 			catch (...)
 			{
