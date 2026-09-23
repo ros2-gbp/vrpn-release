@@ -1,13 +1,13 @@
 #ifndef	vrpn_GHOST_H
 #define	vrpn_GHOST_H
 
-#include  "vrpn_Configure.h"
+#include "vrpn_Configure.h"
+#include "vrpn_Shared.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
 #include <math.h>
 #include <stdio.h>
 #include <quat.h>
-#include <vector>
 
 //----------------------------------------------------------------------------
 // This section contains helper classes that might make life easier.  They were
@@ -65,6 +65,10 @@
 
   class	vrpn_HapticCollision {
   public:
+    vrpn_HapticCollision() {
+      d_location = vrpn_HapticPosition(0,0,0);
+      d_normal = vrpn_HapticVector(0,0,0);
+    }
     vrpn_HapticCollision(const vrpn_HapticPosition &point, const vrpn_HapticVector &dir) {
       d_location = point;
       d_normal = dir;
@@ -79,7 +83,7 @@
     vrpn_HapticVector	d_normal;
   };
 
-  typedef std::vector<vrpn_HapticCollision>	vrpn_HapticCollisionList;
+  typedef vrpn_vector<vrpn_HapticCollision>	vrpn_HapticCollisionList;
 
   class vrpn_HapticCollisionState {
   public:
