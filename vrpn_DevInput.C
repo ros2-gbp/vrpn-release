@@ -124,8 +124,8 @@ vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const cha
 
   std::string node = getDeviceNodes(device_name);
   if (node.length() == 0) {
-	char msg[4096];
-	sprintf(msg, "vrpn_DevInput::vrpn_DevInput(): Could not get device %s",
+	char msg[1024];
+	snprintf(msg, 1024, "vrpn_DevInput::vrpn_DevInput(): Could not get device %.511s",
 		device_name);
 	REPORT_ERROR(msg);
 	return;
@@ -133,8 +133,8 @@ vrpn_DevInput::vrpn_DevInput( const char* name, vrpn_Connection * cxn, const cha
 
   d_fileDescriptor = open(node.c_str(), O_RDONLY);
   if(d_fileDescriptor < 0){
-	char msg[4096];
-	sprintf(msg, "vrpn_DevInput::vrpn_DevInput(): Could not open device %s (%s)",
+	char msg[1024];
+	snprintf(msg, 1024, "vrpn_DevInput::vrpn_DevInput(): Could not open device %.255s (%.512s)",
 		device_name, strerror(errno));
 	REPORT_ERROR(msg);
 	return;
@@ -189,17 +189,17 @@ int vrpn_DevInput::get_report()
 
   switch (event.type) {
   case EV_KEY: {
-    int button_number = event.code;
+    unsigned button_number = event.code;
     if ((d_type == DEVICE_MOUSE_RELATIVE) || (d_type == DEVICE_MOUSE_ABSOLUTE)) {
       button_number -= BTN_MOUSE;
     }
-    if ((button_number >= 0) && (button_number < vrpn_Button_Filter::num_buttons)) {
+    if (button_number < vrpn_Button_Filter::num_buttons) {
       buttons[button_number] = event.value;
     }
   } break;
   case EV_REL: {
-    int channel_number = event.code;
-    if ((channel_number >= 0) && (channel_number < vrpn_Analog::num_channel)) {
+    unsigned channel_number = event.code;
+    if (channel_number < vrpn_Analog::num_channel) {
       for (unsigned int i = 0 ; i < vrpn_Analog::num_channel ; i++) {
 	vrpn_Analog::last[i] = 0;
       }
@@ -207,8 +207,8 @@ int vrpn_DevInput::get_report()
     }
   } break;
   case EV_ABS:
-    int channel_number = event.code;
-    if ((channel_number >= 0) && (channel_number < vrpn_Analog::num_channel)) {
+    unsigned channel_number = event.code;
+    if (channel_number < vrpn_Analog::num_channel) {
       vrpn_float64 value = ((vrpn_float64)event.value - d_absolute_min) / d_absolute_range;
       vrpn_Analog::channel[channel_number] = value;
     }
