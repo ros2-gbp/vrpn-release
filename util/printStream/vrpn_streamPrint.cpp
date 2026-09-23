@@ -78,7 +78,7 @@ void parseArguments(int argc, char **argv)
 		{
 			if (++i >= argc) usage(argv[0]);
 			device_name = new char[14 + strlen(argv[i])+1];
-			sprintf(device_name,"file://%s", argv[i]);
+			snprintf(device_name, 14 + strlen(argv[i]) + 1,"file://%s", argv[i]);
 		}
 		else if( !strcmp( argv[i], "-head" ) )
 		{
@@ -143,7 +143,7 @@ int	main(int argc, char *argv[])
 	if (connection) 
 		delete connection; // needed to make stream file write out
 	if( device_name )
-		delete device_name;
+		delete[] device_name;
 	
 	return 0;
 }
