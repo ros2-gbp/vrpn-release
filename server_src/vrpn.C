@@ -13,7 +13,7 @@
 
 void Usage(const char *s)
 {
-    fprintf(stderr, "Usage: %s [-f filename] [-warn] [-v] [port] [-q]\n", s);
+    fprintf(stderr, "Usage: %s [-f filename] [-warn] [-v] [-quiet] [port] [-q]\n", s);
     fprintf(stderr, "       [-millisleep n]\n");
     fprintf(stderr, "       [-NIC name] [-li filename] [-lo filename]\n");
     fprintf(stderr,
@@ -38,7 +38,8 @@ void Usage(const char *s)
             "                     whole CPU on any uniprocessor machine.\n");
     fprintf(stderr,
             "       -warn: Only warn on errors (default is to bail).\n");
-    fprintf(stderr, "       -v: Verbose.\n");
+    fprintf(stderr, "       -v: Verbose (default).\n");
+    fprintf(stderr, "       -quiet: Don't print informational messages.\n");
     fprintf(stderr, "       -q: Quit when last connection is dropped.\n");
     fprintf(stderr,
             "       -NIC: Use NIC with given IP address or DNS name.\n");
@@ -63,7 +64,7 @@ static const char *g_outLogName = NULL;
 // Use Forwarder as remote-controlled multiple connections.
 vrpn_Forwarder_Server *forwarderServer;
 
-static bool verbose = false;
+static bool verbose = true;
 
 void shutDown(void)
 {
@@ -200,6 +201,10 @@ int main(int argc, char *argv[])
             verbose = true;
             vrpn_System_TextPrinter.set_min_level_to_print(vrpn_TEXT_NORMAL);
         }
+        else if (!strcmp(argv[i], "-quiet")) { // Quiet
+            verbose = false;
+            vrpn_System_TextPrinter.set_min_level_to_print(vrpn_TEXT_WARNING);
+        }
         else if (!strcmp(argv[i], "-q")) { // quit on dropped last con
             auto_quit = true;
         }
@@ -263,7 +268,7 @@ int main(int argc, char *argv[])
         vrpn_create_server_connection(con_name.str().c_str(), g_inLogName, g_outLogName);
 
     // Create the generic server object and make sure it is doing okay.
-    generic_server = new vrpn_Generic_Server_Object(
+    generic_server = new(std::nothrow) vrpn_Generic_Server_Object(
         connection, config_file_name, verbose, bail_on_error);
     if ((generic_server == NULL) || !generic_server->doing_okay()) {
         fprintf(stderr, "Could not start generic server, exiting\n");
