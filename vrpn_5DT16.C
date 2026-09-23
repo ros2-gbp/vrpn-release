@@ -8,7 +8,7 @@
 //   g_ is the prefixe for global variables
 //   p_ is the prefixe for parameters
 
-#include <stdio.h>                      // for sprintf, fprintf, stderr
+#include <stdio.h>                      // for snprintf, fprintf, stderr
 
 #include "vrpn_5DT16.h"
 #include "vrpn_BaseClass.h"             // for ::vrpn_TEXT_ERROR, etc
@@ -103,7 +103,7 @@ int vrpn_5dt16::reset (void)
   vrpn_SleepMsecs (100);  //Give it time to send data
   l_ret=vrpn_read_available_characters (serial_fd, l_inbuf, 5); // read the rest of the data
   char text[50];
-  sprintf(text,"Hardware Version %i.0%i",l_inbuf[0],l_inbuf[1]); // hardware version
+  snprintf(text, 50,"Hardware Version %i.0%i",l_inbuf[0],l_inbuf[1]); // hardware version
   VRPN_MSG_WARNING(text);
   if (l_inbuf[2] & 1) //right or left glove
   {
@@ -197,20 +197,12 @@ void vrpn_5dt16::get_report (void)
 #endif
 
    //--------------------------------------------------------------------
-   // Decode the report and store the values in it into the analog values
-   // if appropriate.
+   // Decode the report and store the values in it into the analog values.
    //--------------------------------------------------------------------
 
    for(int i=0;i<16;i++) {
 	   channel[i]=_buffer[i*2+2]*256+_buffer[i*2+3];
    }
-   char text[512];
-
-   sprintf(text,"original %f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f|%f\n",channel[0],channel[1],channel[2],channel[3],channel[4],
-	   channel[5],channel[6],channel[7],channel[8],channel[9],
-	   channel[10],channel[11],channel[12],channel[13],channel[14],
-	   channel[15]);
-   VRPN_MSG_ERROR(text);
 
    //--------------------------------------------------------------------
    // Done with the decoding, send the reports and go back to syncing
@@ -287,7 +279,7 @@ void vrpn_5dt16::mainloop ()
 	  vrpn_gettimeofday(&current_time, NULL);
 	  if ( vrpn_TimevalDuration(current_time,timestamp) > MAX_TIME_INTERVAL)
 	  {
-	    sprintf (l_errmsg, "vrpn_5dt16::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+	    snprintf (l_errmsg, 256, "vrpn_5dt16::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 		     current_time.tv_sec,
 		     static_cast<long>(current_time.tv_usec),
 		     timestamp.tv_sec,
