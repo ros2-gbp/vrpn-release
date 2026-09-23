@@ -209,12 +209,6 @@ public:
         {
         }
 
-        SendTextMessageBoundCall(SendTextMessageBoundCall const &other)
-            : _p(other._p)
-            , _severity(other._severity)
-        {
-        }
-
         int operator()(const char *msg) const
         {
             struct timeval timestamp;
@@ -369,33 +363,6 @@ public:
     typedef void(VRPN_CALLBACK *HANDLER_TYPE)(void *userdata,
                                               const CALLBACK_STRUCT info);
 
-    /// This class requires deep copies.
-    void operator=(const vrpn_Callback_List &from)
-    {
-        // Delete any existing elements in the list.
-        CHANGELIST_ENTRY *current, *next;
-        current = d_change_list;
-        while (current != NULL) {
-            next = current->next;
-            try {
-              delete current;
-            } catch (...) {
-              fprintf(stderr,
-                "vrpn_Callback_List::operator =: Deletion failure\n");
-              return;
-            }
-            current = next;
-        }
-
-        // Copy all elements from the other list.  XXX Side effect, this inverts
-        // the order
-        current = from.d_change_list;
-        while (current != NULL) {
-            register_handler(current->userdata, current->handler);
-            current = current->next;
-        }
-    }
-
     /// Call this to add a handler to the list.
     int register_handler(void *userdata, HANDLER_TYPE handler)
     {
@@ -476,6 +443,47 @@ public:
     /// The list starts out empty
     vrpn_Callback_List()
         : d_change_list(NULL){};
+
+    /// This class requires deep copies.
+    vrpn_Callback_List(const vrpn_Callback_List& from)
+      : d_change_list(NULL)
+    {
+      // Copy all elements from the other list.  XXX Side effect, this inverts
+      // the order
+      CHANGELIST_ENTRY *current, *next;
+      current = from.d_change_list;
+      while (current != NULL) {
+        register_handler(current->userdata, current->handler);
+        current = current->next;
+      }
+    }
+
+    void operator=(const vrpn_Callback_List& from)
+    {
+      // Delete any existing elements in the list.
+      CHANGELIST_ENTRY* current, * next;
+      current = d_change_list;
+      while (current != NULL) {
+        next = current->next;
+        try {
+          delete current;
+        }
+        catch (...) {
+          fprintf(stderr,
+            "vrpn_Callback_List::operator =: Deletion failure\n");
+          return;
+        }
+        current = next;
+      }
+
+      // Copy all elements from the other list.  XXX Side effect, this inverts
+      // the order
+      current = from.d_change_list;
+      while (current != NULL) {
+        register_handler(current->userdata, current->handler);
+        current = current->next;
+      }
+    }
 
     /// Clear the list upon destruction if it is not empty already
     ~vrpn_Callback_List()

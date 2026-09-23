@@ -153,7 +153,7 @@ vrpn_Generic_Server_Object::templated_setup_device_name_only(char *&pch,
         fprintf(stderr, "Bad line: %s\n", line);
         return -1;
     }
-    T *device = new T(s2, connection);
+    T *device = new(std::nothrow) T(s2, connection);
     if (device == NULL) {
         fprintf(stderr, "Can't create new device from line %s\n", line);
         return -1;
@@ -178,7 +178,7 @@ inline int vrpn_Generic_Server_Object::templated_setup_HID_device_name_only(
         return -1;
     }
 #ifdef VRPN_USE_HID
-    T *device = new T(s2, connection);
+    T *device = new(std::nothrow) T(s2, connection);
     if (device == NULL) {
         fprintf(stderr, "Can't create new device from line %s\n", line);
         return -1;
@@ -263,7 +263,7 @@ int vrpn_Generic_Server_Object::setup_SGIBox(char *&pch, char *line,
     int tbutton;
     // setting listed buttons to toggles instead of default momentary
     pch += strlen(s2) + 1;
-    while (sscanf(pch, "%s", s2) == 1) {
+    while (sscanf(pch, "%511s", s2) == 1) {
         pch += strlen(s2) + 1;
         tbutton = atoi(s2);
         vrpn_special_sgibox->set_toggle(tbutton, vrpn_BUTTON_TOGGLE_OFF);
@@ -408,8 +408,7 @@ int vrpn_Generic_Server_Object::setup_JoyFly(char *&pch, char *line,
 int vrpn_Generic_Server_Object::get_AFline(char *line, vrpn_TAF_axis *axis)
 {
     char axis_name[LINESIZE];
-    char *name =
-        new char[LINESIZE]; // We need this to stay around for the param
+    char *name = new char[LINESIZE]; // We need this to stay around for the param
     int channel;
     float offset, thresh, power, scale;
 
@@ -1333,15 +1332,15 @@ int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon(
 
     // set damping to 0.9.
     if (numparms < 5) {
-        strcpy(s5, "0.9");
+        vrpn_strcpy(s5, "0.9");
     }
     // set kinematics model to "stamper", if not set
     if (numparms < 4) {
-        strcpy(s4, "stamper");
+        vrpn_strcpy(s4, "stamper");
     }
     // set grip to "4-button" (the default one), if not set.
     if (numparms < 3) {
-        strcpy(s3, "4-button");
+        vrpn_strcpy(s3, "4-button");
     }
 
 #if defined(VRPN_USE_LIBNIFALCON)
@@ -1903,9 +1902,9 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock(char *&pch, char *line,
     char s2[LINESIZE], s3[LINESIZE];
     int i1, i2, i3;
     char useERT[LINESIZE];
-    strcpy(useERT, "y");
+    vrpn_strcpy(useERT, "y");
     char hemi[LINESIZE];
-    strcpy(hemi, "+z");
+    vrpn_strcpy(hemi, "+z");
     bool invertQuaternion;
 
     VRPN_CONFIG_NEXT();
@@ -1992,13 +1991,18 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel(
 
     // set up strtok to get the variable num of port names
     char rgch[24];
-    sprintf(rgch, "%d", i2);
+    snprintf(rgch, 24, "%d", i2);
     char *pch2 = strstr(pch, rgch);
     strtok(pch2, " \t");
     // pch points to baud, next strtok will give invertQuaternion
     strtok(NULL, " \t");
     // pch points to invertQuaternion, next strtok will give first port name
 
+    if (i1 > VRPN_FLOCK_MAX_SENSORS) {
+      fprintf(stderr, "Too many vrpn_Tracker_Flock_Parallel sensors: %d (max %d)\n",
+        i1, VRPN_FLOCK_MAX_SENSORS);
+      return -1;
+    }
     char *rgs[VRPN_FLOCK_MAX_SENSORS];
     // get sensor ports
     for (int iSlaves = 0; iSlaves < i1; iSlaves++) {
@@ -2006,8 +2010,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel(
         if (!(pch2 = strtok(NULL, " \t"))) {
             fprintf(stderr, "Bad vrpn_Tracker_Flock_Parallel line: %s\n", line);
             return -1;
-        }
-        else {
+        } else {
             sscanf(pch2, "%511s", rgs[iSlaves]);
         }
     }
@@ -2020,6 +2023,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock_Parallel(
                s2, i1, s3, i2);
     _devices->add(new vrpn_Tracker_Flock_Parallel(s2, connection, i1, s3, i2,
                                                   rgs, invertQuaternion));
+
+    // Free our resources
+    for (int iSlaves = 0; iSlaves < i1; iSlaves++) {
+        delete[] rgs[iSlaves];
+    }
 
     return 0;
 }
@@ -2167,8 +2175,8 @@ int vrpn_Generic_Server_Object::setup_DevInput(char *&pch, char *line,
     VRPN_CONFIG_NEXT();
 
     // Get the arguments (class, dev_input_name)
-    if (sscanf(pch, "%511s \"%[^\"]\" %s %d", s2, s3, s4, &int_param) != 4) {
-        if (sscanf(pch, "%511s \"%[^\"]\" %s", s2, s3, s4) != 3) {
+    if (sscanf(pch, "%511s \"%[^\"]\" %511s %d", s2, s3, s4, &int_param) != 4) {
+        if (sscanf(pch, "%511s \"%[^\"]\" %511s", s2, s3, s4) != 3) {
             fprintf(stderr, "Bad vrpn_DevInput line: %s\n", line);
             return -1;
         }
@@ -2405,7 +2413,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char *&pch, char *line,
     VRPN_CONFIG_NEXT();
 
     // Get the arguments (class, tracker_name, port, [optional IS900time])
-    sscanf(line, "vrpn_Tracker_InterSense %s %s", trackerName, commStr);
+    sscanf(line, "vrpn_Tracker_InterSense %511s %511s", trackerName, commStr);
     if ((numparms = sscanf(pch, "%511s%511s%511s%511s%511s", trackerName,
                            commStr, s4, s5, s6)) < 2) {
         fprintf(stderr, "Bad vrpn_Tracker_InterSense line: %s\n%s %s\n", line,
@@ -2721,7 +2729,7 @@ int vrpn_Generic_Server_Object::setup_GlobalHapticsOrb(char *&pch, char *line,
 
     VRPN_CONFIG_NEXT();
     // Get the arguments (orb_name, port name, baud rate)
-    if (sscanf(pch, "%511s%s%d", s2, s3, &i1) != 3) {
+    if (sscanf(pch, "%511s%511s%d", s2, s3, &i1) != 3) {
         fprintf(stderr, "Bad vrpn_GlobalHapticsOrb line: %s\n", line);
         return -1;
     }
@@ -2829,8 +2837,13 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
     char *s2;
     char *str[LINESIZE];
     char *s;
-    char sep[] = " ,\t,\n";
+    const char* sep = " \t\n";
     int count = 0;
+    char* connstr[ 3 ];
+    const char* connsep = ":\n";
+    int conncount;
+    const char* dtrackHost;
+    bool doFirewall;
     int dtrackPort, isok;
     float timeToReachJoy;
     int nob, nof, nidbf;
@@ -2854,7 +2867,42 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
     }
 
     s2 = str[0];
-    dtrackPort = (int)strtol(str[1], &s, 0);
+
+    // parse DTRACK connection string:
+
+    conncount = 0;
+    connstr[ conncount ] = strtok( str[ 1 ], connsep );
+    while ( connstr[ conncount ] != NULL )
+    {
+        conncount++;
+        if ( conncount >= 3 )  break;
+        connstr[ conncount ] = strtok( NULL, connsep );
+    }
+
+    doFirewall = false;
+	 if ( conncount >= 2 )
+	 {
+        dtrackHost = connstr[ 0 ];
+        dtrackPort = ( int )strtol( connstr[ 1 ], &s, 10 );
+
+		  if ( conncount == 3 )
+        {
+            if ( strcmp( connstr[ 2 ], "fw" ) == 0 )
+            {
+                doFirewall = true;
+				}
+            else
+            {
+                fprintf( stderr, "Invalid suffix in vrpn_Tracker_DTrack connection string: %s\n", line );
+                return -1;
+				}
+        }
+	 }
+	 else
+    {
+        dtrackHost = NULL;
+        dtrackPort = ( int )strtol( connstr[ 0 ], &s, 10 );
+    }
 
     // tracing/3dof (optional; always last arguments):
 
@@ -2924,10 +2972,20 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
         pidbf = idbf;
     }
 
-    if (verbose) {
-        printf(
-            "Opening vrpn_Tracker_DTrack: %s at port %d, timeToReachJoy %.2f",
-            s2, dtrackPort, timeToReachJoy);
+    if ( verbose )
+    {
+        if ( dtrackHost != NULL )
+        {
+            printf(
+                "Opening vrpn_Tracker_DTrack: %s at host %s port %d fw %d, timeToReachJoy %.2f",
+                s2, dtrackHost, dtrackPort, doFirewall, timeToReachJoy );
+		  }
+        else
+        {
+            printf(
+                "Opening vrpn_Tracker_DTrack: %s at port %d, timeToReachJoy %.2f",
+                s2, dtrackPort, timeToReachJoy );
+        }
         if (nob >= 0 && nof >= 0) {
             printf(", fixNtargets %d %d", nob, nof);
         }
@@ -2942,9 +3000,9 @@ int vrpn_Generic_Server_Object::setup_DTrack(char *&pch, char *line,
 
 #ifndef sgi
 
-    _devices->add(new vrpn_Tracker_DTrack(s2, connection, dtrackPort,
-                                          timeToReachJoy, nob, nof, pidbf,
-                                          act3DOFout, actTracing));
+    _devices->add( new vrpn_Tracker_DTrack( s2, connection, dtrackHost, dtrackPort, doFirewall,
+                                            timeToReachJoy, nob, nof, pidbf,
+                                            act3DOFout, actTracing ) );
 
     return 0;
 #else
@@ -3453,7 +3511,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace(char *&pch, char *line,
 
   vrpn_Tracker_PhaseSpace* pstracker = NULL;
 
-  if (sscanf(line, "vrpn_Tracker_PhaseSpace %s", trackerName) == 1) {
+  if (sscanf(line, "vrpn_Tracker_PhaseSpace %511s", trackerName) == 1) {
     pstracker = new vrpn_Tracker_PhaseSpace (trackerName, connection);
   } else {
     fprintf (stderr, "Bad vrpn_Tracker_PhaseSpace line: %s\nProper format is:  vrpn_Tracker_Phasespace trackerName\n", line);
@@ -3555,7 +3613,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&,
     char *rigidBodyFileNames[VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES];
 
     // get tracker name and device
-    if (sscanf(line, "vrpn_Tracker_NDI_Polaris %s %s %d", trackerName, device,
+    if (sscanf(line, "vrpn_Tracker_NDI_Polaris %511s %511s %d", trackerName, device,
                &numRigidBodies) < 3) {
         fprintf(stderr, "Bad vrpn_Tracker_NDI_Polaris line: %s\n", line);
         return -1;
@@ -3573,7 +3631,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris(char *&,
         }
         rigidBodyFileNames[rbNum] =
             new char[LINESIZE]; // allocate string for filename
-        if (sscanf(line, "%s", rigidBodyFileNames[rbNum]) != 1) {
+        if (sscanf(line, "%511s", rigidBodyFileNames[rbNum]) != 1) {
             fprintf(stderr, "Tracker_NDI_Polaris: error reading .rom filename "
                             "#%d from config file in line: %s\n",
                     rbNum, line);
@@ -3691,9 +3749,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead(
     // Get the arguments (tracker_name, wiimote_name, min_update_rate,
     // led_distance)
     if ((numparms = sscanf(pch, "%511s%511s%f%f", s2, s3, &f1, &f2)) < 2) {
-        fprintf(stderr,
-                "Bad vrpn_Tracker_WiimoteHead line: %s\n%s %s %s %f %f\n", line,
-                pch, s2, s3, f1, f2);
+        fprintf(stderr, "Bad vrpn_Tracker_WiimoteHead line: %s\n", line);
         return -1;
     }
 
@@ -3845,10 +3901,10 @@ int vrpn_Generic_Server_Object::setup_Tracker_GameTrak(char *pch, char *line,
     if (line[0] != '\n') {
         // get the first token
         char tok[LINESIZE];
-        sscanf(line, "%s", tok);
+        sscanf(line, "%511s", tok);
 
         if (strcmp(tok, "axis_mapping") == 0) {
-            sscanf(line, "%s %d %d %d %d %d %d", tok, &mapping[0], &mapping[1],
+            sscanf(line, "%511s %d %d %d %d %d %d", tok, &mapping[0], &mapping[1],
                    &mapping[2], &mapping[3], &mapping[4], &mapping[5]);
         }
         else {
@@ -4328,7 +4384,10 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
     VRPN_CONFIG_NEXT();
     // Get the arguments (class(already taken), tracker_name, reports per
     // second)
-    sscanf(pch, "%511s%d", name, &Hz);
+    if (2 != sscanf(pch, "%511s%d", name, &Hz)) {
+        fprintf(stderr, "Bad FastrakPDI line: %s\n", line);
+        return -1;
+    }
 
     // remove the '\' from the end of the name, if it has one
     if (name[strlen(name) - 1] == '\\') {
@@ -4356,7 +4415,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_FastrakPDI(char *&pch, char *line,
 
         if (strncmp(line, "PDIStylus", strlen("PDIStylus")) == 0) {
             int nStylus = 0;
-            sscanf(line, "PDIStylus %d", &nStylus);
+            if (0 == sscanf(line, "PDIStylus %d", &nStylus)) {
+                fprintf(stderr,
+                    "PDIStylus command missing stylus number: %s\r\n",
+                    line);
+                return -1;
+            }
             if (!(nStylus > 0)) {
                 fprintf(stderr,
                         "PDIStylus command invalid station number: %s\r\n",
@@ -4430,10 +4494,15 @@ int vrpn_Generic_Server_Object::setup_Tracker_LibertyPDI(char *&pch, char *line,
 
         if (strncmp(line, "PDIStylus", strlen("PDIStylus")) == 0) {
             int nStylus = 0;
-            sscanf(line, "PDIStylus %d", &nStylus);
+            if (0 == sscanf(line, "PDIStylus %d", &nStylus)) {
+                fprintf(stderr,
+                    "PDIStylus command missing stylus number: %s\r\n",
+                    line);
+                return -1;
+            }
             if (!(nStylus > 0)) {
                 fprintf(stderr,
-                        "PDIStylus command invalid station number: %s\r\n",
+                        "PDIStylus command invalid stylus number: %s\r\n",
                         line);
                 return -1;
             }
@@ -4525,13 +4594,13 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor(char *&pch, char *line,
         // if we haven't run out of room for them.
         if (num_reset_commands < MAX_RESET_COMMANDS) {
           char command[LINESIZE];
-          sscanf(line, "%s", command);
-          char *command_copy = new char[strlen(command)+1];
+          sscanf(line, "%511s", command);
+          char *command_copy = new(std::nothrow) char[strlen(command)+1];
           if (command_copy == NULL) {
             fprintf(stderr, "Out of memory in YEI description\n");
             return -1;
           }
-          strcpy(command_copy, command);
+          vrpn_strncpynull(command_copy, command, strlen(command) + 1);
           reset_commands[num_reset_commands++] = command_copy;
         }
     }
@@ -4624,13 +4693,13 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
         // if we haven't run out of room for them.
         if (num_reset_commands < MAX_RESET_COMMANDS) {
           char command[LINESIZE];
-          sscanf(line, "%s", command);
-          char *command_copy = new char[strlen(command)+1];
+          sscanf(line, "%511s", command);
+          char *command_copy = new(std::nothrow) char[strlen(command)+1];
           if (command_copy == NULL) {
             fprintf(stderr, "Out of memory in YEI description\n");
             return -1;
           }
-          strcpy(command_copy, command);
+          vrpn_strncpynull(command_copy, command, strlen(command) + 1);
           reset_commands[num_reset_commands++] = command_copy;
         }
     }
@@ -4708,13 +4777,13 @@ int vrpn_Generic_Server_Object::setup_YEI_3Space_Sensor_Wireless(char *&pch, cha
           // if we haven't run out of room for them.
           if (num_reset_commands < MAX_RESET_COMMANDS) {
             char command[LINESIZE];
-            sscanf(line, "%s", command);
-            char *command_copy = new char[strlen(command)+1];
+            sscanf(line, "%511s", command);
+            char *command_copy = new(std::nothrow) char[strlen(command)+1];
             if (command_copy == NULL) {
               fprintf(stderr, "Out of memory in YEI description\n");
               return -1;
             }
-            strcpy(command_copy, command);
+            vrpn_strncpynull(command_copy, command, strlen(command) + 1);
             reset_commands[num_reset_commands++] = command_copy;
           }
       }
@@ -5148,7 +5217,7 @@ int vrpn_Generic_Server_Object::setup_Vality_vGlass(char *&pch, char *line, FILE
         return -1;
     }
 
-    // Open the Oculus DK2
+    // Open the vGlass
     if (verbose) {
         printf("Opening Vality_vGlass\n");
     }
@@ -5159,6 +5228,40 @@ int vrpn_Generic_Server_Object::setup_Vality_vGlass(char *&pch, char *line, FILE
 #else
     fprintf(stderr,
             "Vality_vGlass driver works only with VRPN_USE_HID defined!\n");
+#endif
+    return 0; // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_Microsoft_Xbox_360(char*& pch, char* line, FILE*)
+{
+    char s2[LINESIZE];
+    unsigned int vid, pid;
+
+    VRPN_CONFIG_NEXT();
+#ifdef VRPN_USE_HID
+    int ret = sscanf(pch, "%511s %x %x", s2, &vid, &pid);
+    switch (ret) {
+    case 1:
+        _devices->add(new vrpn_Microsoft_Controller_Raw_Xbox_360(s2, connection));
+        return 0;
+    case 3:
+        // Fall through to opening with the custom values below.
+        break;
+    default:
+        fprintf(stderr, "Bad Microsoft_Controller_Raw_Xbox_360 line: %s\n", line);
+        return -1;
+    }
+
+    // Open the device
+    if (verbose) {
+        printf("Opening Vality_vGlass\n");
+    }
+
+    _devices->add(new vrpn_Microsoft_Controller_Raw_Xbox_360_base(s2, connection,
+        vid, pid));
+#else
+    fprintf(stderr,
+        "Microsoft_Controller_Raw_Xbox_360 driver works only with VRPN_USE_HID defined!\n");
 #endif
     return 0; // successful completion
 }
@@ -5602,6 +5705,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                     VRPN_CHECK(templated_setup_device_name_only<
                         vrpn_3DConnexion_SpaceMouseWireless>);
                 }
+                else if (VRPN_ISIT("vrpn_3DConnexion_SpaceMouseWireless2")) {
+                    VRPN_CHECK(templated_setup_device_name_only<
+                        vrpn_3DConnexion_SpaceMouseWireless2>);
+                }
                 else if (VRPN_ISIT("vrpn_3DConnexion_SpaceMouseProWireless")) {
 		                VRPN_CHECK(templated_setup_device_name_only<
 				                vrpn_3DConnexion_SpaceMouseProWireless>);
@@ -5631,8 +5738,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(
                         vrpn_Microsoft_Controller_Raw_Xbox_S>);
                 }
                 else if (VRPN_ISIT("vrpn_Microsoft_Controller_Raw_Xbox_360")) {
-                    VRPN_CHECK(templated_setup_HID_device_name_only<
-                        vrpn_Microsoft_Controller_Raw_Xbox_360>);
+                    VRPN_CHECK(setup_Microsoft_Xbox_360);
                 }
                 else if (VRPN_ISIT("vrpn_Microsoft_Controller_Raw_Xbox_360_Wireless")) {
                     VRPN_CHECK(templated_setup_HID_device_name_only<

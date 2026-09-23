@@ -127,7 +127,7 @@ int main (int argc, char * argv [])
 	
 	vrpn_TAF_axis	taf_axis1;  // Axis that returns values from the analog
 	char	name[500];
-	sprintf(name, "*%s", ANALOG_NAME);
+	snprintf(name, 500, "*%.498s", ANALOG_NAME);
 	taf_axis1.name = name;
 	taf_axis1.channel = 0;
 	taf_axis1.offset = 0.0;
@@ -172,7 +172,6 @@ int main (int argc, char * argv [])
 	    // Make sure that we are getting analog values
 	    {	static	struct	timeval	last_report;
 		static	int	first = 1;
-		struct timeval now;
 
 		if (first) {
 		    vrpn_gettimeofday(&last_report, NULL);
