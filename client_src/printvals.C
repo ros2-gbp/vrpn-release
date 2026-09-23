@@ -2,7 +2,6 @@
 #include <stdio.h>                      // for fprintf, stderr, NULL, etc
 #include <stdlib.h>                     // for atof, exit, atoi
 #include <string.h>                     // for strcmp, strncmp
-#include <vector>
 #include <vrpn_Configure.h>             // for VRPN_CALLBACK
 #include <vrpn_Button.h>                // for vrpn_BUTTONCB
 #include <vrpn_Shared.h>                // for vrpn_SleepMsecs
@@ -28,7 +27,6 @@ int beQuiet = 0;
 int beRedundant = 0;
 int redNum = 0;
 double redTime = 0.0;
-double delayTime = 0.0;
 
 int done = 0;	    // Signals that the program should exit
 
@@ -110,7 +108,7 @@ void init (const char * station_name,
            const char * remote_in_logfile, const char * remote_out_logfile,
            const char * NIC)
 {
-	std::vector<char> devicename(strlen(station_name)+12);
+	vrpn_vector<char> devicename(strlen(station_name)+12);
 	//char * hn;
 
         vrpn_int32 gotConn_type;
@@ -119,7 +117,7 @@ void init (const char * station_name,
 	// these will be entered in the table and found by the
 	// vrpn_get_connection_by_name() inside vrpn_Tracker and vrpn_Button
 
-	sprintf(devicename.data(), "Tracker0@%s", station_name);
+	snprintf(devicename.data(), devicename.size(), "Tracker0@%s", station_name);
 	if (!strncmp(station_name, "file:", 5)) {
         fprintf(stderr, "Opening file %s.\n", station_name);
 	  c = new vrpn_File_Connection (station_name);  // now unnecessary!
@@ -128,16 +126,13 @@ void init (const char * station_name,
             fprintf(stderr, "Warning:  Reading from file, so not logging.\n");
           }
 	} else {
-        fprintf(stderr, "Connecting to host %s.\n", station_name);
-	  c = vrpn_get_connection_by_name
-                    (station_name,
-		    local_in_logfile, local_out_logfile,
-		    remote_in_logfile, remote_out_logfile,
-                    NIC);
-          if (delayTime > 0.0) {
-            //((vrpn_DelayedConnection *) c)->setDelay
-                              //(vrpn_MsecsTimeval(delayTime * 1000.0));
-            //((vrpn_DelayedConnection *) c)->delayAllTypes(vrpn_TRUE);
+          fprintf(stderr, "Connecting to host %s.\n", station_name);
+          if (0 == (c = vrpn_get_connection_by_name(station_name,
+                  local_in_logfile, local_out_logfile,
+                  remote_in_logfile, remote_out_logfile,
+                  NIC))) {
+              fprintf(stderr, "vrpn_get_connection_by_name() failed.\n");
+              return;
           }
 	}
 
@@ -150,10 +145,10 @@ void init (const char * station_name,
         fprintf(stderr, "Tracker's name is %s.\n", devicename.data());
 	tkr = new vrpn_Tracker_Remote (devicename.data());
 
-	sprintf(devicename.data(), "Button0@%s", station_name);
+	snprintf(devicename.data(), devicename.size(), "Button0@%s", station_name);
         fprintf(stderr, "Button's name is %s.\n", devicename.data());
 	btn = new vrpn_Button_Remote (devicename.data());
-	sprintf(devicename.data(), "Button1@%s", station_name);
+	snprintf(devicename.data(), devicename.size(), "Button1@%s", station_name);
         fprintf(stderr, "Button 2's name is %s.\n", devicename.data());
 	btn2 = new vrpn_Button_Remote (devicename.data());
 
@@ -250,7 +245,7 @@ void Usage (const char * arg0) {
   fprintf(stderr,
 "Usage:  %s [-lli logfile] [-llo logfile] [-rli logfile ] [-rlo logfile]\n"
 "           [-NIC ip] [-filterpos] [-quiet]\n"
-"           [-red num time] [-delay time] station_name\n"
+"           [-red num time] station_name\n"
 "  -notracker:  Don't print tracker reports\n" 
 "  -lli:  log incoming messages locally in <logfile>\n" 
 "  -llo:  log outgoing messages locally in <logfile>\n" 
@@ -261,7 +256,6 @@ void Usage (const char * arg0) {
 "  -quiet:  ignore VRPN warnings\n"
 "  -red <num> <time>:  send every message <num>\n"
 "    times <time> seconds apart\n"
-"  -delay <time:  delay all messages received by <time>\n"
 "  station_name:  VRPN name of data source to contact\n"
 "    one of:  <hostname>[:<portnum>]\n"
 "             file:<filename>\n",
@@ -275,7 +269,7 @@ int main (int argc, char * argv [])
 
 #ifdef hpux
   char default_station_name [20];
-  strcpy(default_station_name, "ioph100");
+  vrpn_strcpy(default_station_name, "ioph100");
 #else
   char default_station_name [] = { "ioph100" };
 #endif
@@ -334,9 +328,6 @@ int main (int argc, char * argv [])
       redNum = atoi(argv[i]);
       i++;
       redTime = atof(argv[i]);
-    } else if (!strcmp(argv[i], "-delay")) {
-      i++;
-      delayTime = atof(argv[i]);
     } else
       station_name = argv[i];
   }
