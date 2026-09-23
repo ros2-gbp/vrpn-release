@@ -24,11 +24,15 @@
     if (a == -1) return -1
 
 #if defined(VRPN_USE_WINSOCK_SOCKETS)
-/* from HP-UX */
+/* from HP-UX */\
+/* minGW guards the definition, so we do so here as well.
+minGW declares more, so we are not defining _TIMEZONE_DEFINED. */
+#ifndef _TIMEZONE_DEFINED /* also in sys/time.h */
 struct timezone {
 	int tz_minuteswest; /* minutes west of Greenwich */
 	int tz_dsttime;     /* type of dst correction */
 };
+#endif /* _TIMEZONE_DEFINED */
 #endif
 
 // perform normalization of a timeval
@@ -293,7 +297,7 @@ VRPN_API int vrpn_buffer(char **insertPt, vrpn_int32 *buflen,
                     "vrpn_buffer:  buffer not long enough for string.\n");
             return -1;
         }
-        strcpy(*insertPt, string);
+        vrpn_strncpynull(*insertPt, string, len);
         *insertPt += len;
         *buflen -= static_cast<vrpn_int32>(len);
     }
@@ -1128,4 +1132,173 @@ bool vrpn_test_pack_unpack(void)
     }
 
     return true;
+}
+
+bool vrpn_test_vrpn_vector(void)
+{
+  // Test the default constructor and ensure that the destructor doesn't crash.
+  {
+    vrpn_vector<int> v0;
+    if ((v0.size() != 0) || (v0.data() != 0)) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): Default constructor failed\n");
+      return false;
+    }
+  }
+  
+  // Test the sized contructor, writing to the vector, the copy
+  // constructor, and the [] operator.
+  {
+    vrpn_uint32 count = 19;
+    vrpn_vector<vrpn_uint32> v1(count);
+    if (v1.size() != count) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): Sized constructor size failed\n");
+      return false;
+    }
+    for (vrpn_uint32 i = 0; i < v1.size(); i++) {
+      v1[i] = i;
+    }
+    vrpn_vector<vrpn_uint32> v2(v1);
+    if (v2.size() != count) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): Copy constructor size failed\n");
+      return false;
+    }
+    for (vrpn_uint32 i = 0; i < v2.size(); i++) {
+      if (v1[i] != i) {
+        fprintf(stderr,"vrpn_test_vrpn_vector(): Copy constructor data failed\n");
+        return false;
+      }
+    }
+  }
+  
+  // Test range constructor
+  {
+    vrpn_uint32 count = 19;
+    vrpn_vector<vrpn_uint32> v1(count);
+    for (vrpn_uint32 i = 0; i < v1.size(); i++) {
+      v1[i] = i;
+    }
+    vrpn_vector<vrpn_uint32> v2(&v1.data()[1], &v1.data()[10]);
+    if (v2.size() != 9) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): Range constructor size failed\n");
+      return false;
+    }
+    for (vrpn_uint32 i = 0; i < v2.size(); i++) {
+      if (v2[i] != i+1) {
+        fprintf(stderr,"vrpn_test_vrpn_vector(): Range constructor data failed\n");
+        return false;
+      }
+    }
+  }
+  
+  // Test data() push_back() and empty().
+  {
+    vrpn_vector<vrpn_uint32> v1;
+    if (!v1.empty()) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): Empty failed when empty\n");
+      return false;
+    }
+    v1.push_back(1);
+    if (v1.empty()) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): Empty failed when not empty\n");
+      return false;
+    }
+    if (v1.data()[0] != 1) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): data() failed on push_back\n");
+      return false;
+    }
+  }
+  
+  // Test resize().
+  {
+    vrpn_vector<vrpn_uint32> v1;
+    v1.push_back(1);
+    v1.push_back(2);
+    v1.resize(2);
+    if (v1.size() != 2) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): resize failed on do nothing\n");
+      return false;
+    }
+    if ((v1[0] != 1) || (v1[1] != 2)) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): resize data failed on do nothing\n");
+      return false;
+    }
+    v1.resize(1);
+    if (v1.size() != 1) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): resize failed on shrink\n");
+      return false;
+    }
+    if ((v1[0] != 1)) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): resize data failed on shrink\n");
+      return false;
+    }
+    v1.resize(10);
+    if (v1.size() != 10) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): resize failed on grow\n");
+      return false;
+    }
+    if ((v1[0] != 1)) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): resize data failed on grow\n");
+      return false;
+    }
+  }
+  
+  // Test front(), back(), assign(), and clear()
+  {
+    vrpn_vector<vrpn_uint32> v1;
+    v1.push_back(1);
+    v1.push_back(2);
+    if (v1.front() != 1) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): front failed\n");
+      return false;
+    }
+    if (v1.back() != 2) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): back failed\n");
+      return false;
+    }
+    vrpn_vector<vrpn_uint32> v2;
+    vrpn_uint32 count = 2;
+    v2.assign(count, 7);
+    if ((v2[0] != 7) || (v2[1] != 7)) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): assign value failed\n");
+      return false;
+    }
+    v2.assign(&v1[0], &v1[2]);
+    if ((v2[0] != 1) || (v2[1] != 2)) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): assign iterators failed\n");
+      return false;
+    }
+    v1.clear();
+    if (v1.size() != 0) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): clear failed\n");
+      return false;
+    }
+  }
+  
+  // Test begin() and end()
+  {
+    vrpn_vector<vrpn_uint32> v0, v1(10);
+    if ((v0.begin() != 0) || (v0.end() != 0)) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): empty begin/end failed\n");
+      return false;
+    }
+    if ((v1.begin() != v1.data()) || (v1.end() != &v1.data()[10])) {
+      fprintf(stderr,"vrpn_test_vrpn_vector(): begin/end failed\n");
+      return false;
+    }
+  }
+
+  // Test operator =
+  {
+    vrpn_vector<vrpn_uint32> v0, v1;
+    v0.push_back(1);
+    v0.push_back(2);
+    v1 = v0;
+    v1[0] = 3;
+    if ((v1[1] != 2) || (v0[0] != 1)) {
+      fprintf(stderr, "vrpn_test_vrpn_vector(): operator = failed (%d, %d)\n", v0[0], v1[1]);
+      return false;
+    }
+  }
+
+  return true;
 }
