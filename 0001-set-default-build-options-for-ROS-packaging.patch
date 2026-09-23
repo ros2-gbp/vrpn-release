@@ -1,32 +1,36 @@
-From 4cd8f879d30b52220f0d9b8c8e6e8b5d14800e4e Mon Sep 17 00:00:00 2001
+From ba58e5dd7500a425119e9e0f3957a827a0715270 Mon Sep 17 00:00:00 2001
 From: Alvin Sun <alvinsunyixiao@gmail.com>
-Date: Fri, 1 Jul 2022 15:27:58 -0700
-Subject: [PATCH 4/6] Revert "remove cmake sets"
+Date: Wed, 23 Sep 2026 16:55:49 -0700
+Subject: [PATCH 1/2] set default build options for ROS packaging
 
-This reverts commit b5435aaa0b8730309c132cee7ef87627e1845c11.
+Only build the client library; skip java, python, clients, servers and
+the server library.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
 ---
- CMakeLists.txt | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ CMakeLists.txt | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8c84ab34b6e7..16db0e1da011 100644
+index 9e91e2c..a2c4351 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -20,6 +20,14 @@ include(OptionRequires)
+@@ -20,6 +20,15 @@ include(OptionRequires)
  include(CTest)
  include(CheckIncludeFileCXX)
  
 +set(VRPN_BUILD_CLIENT_LIBRARY TRUE CACHE BOOL "build client library")
 +set(VRPN_BUILD_JAVA FALSE CACHE BOOL "do not build java")
 +set(VRPN_BUILD_PYTHON FALSE CACHE BOOL "do not build python")
++set(VRPN_BUILD_PYTHON_HANDCODED_2X FALSE CACHE BOOL "do not build python2 handcoded bindings")
++set(VRPN_BUILD_PYTHON_HANDCODED_3X FALSE CACHE BOOL "do not build python3 handcoded bindings")
 +set(VRPN_BUILD_CLIENTS FALSE CACHE BOOL "do not build clients")
 +set(VRPN_BUILD_SERVERS FALSE CACHE BOOL "do not build servers")
 +set(VRPN_BUILD_SERVER_LIBRARY FALSE CACHE BOOL "do not build server library")
-+set(BUILD_TESTING FALSE)
 +
  if((NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) OR VRPN_SUBPROJECT_BUILD)
  	# If you're using this as a subproject and want things installed, set VRPN_INSTALL TRUE.
  	set(SUBPROJECT TRUE)
 -- 
-2.53.0
+2.55.0
 
