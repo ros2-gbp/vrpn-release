@@ -1,4 +1,4 @@
-#include <stdio.h>  // for fprintf, stderr, sprintf
+#include <stdio.h>  // for fprintf, stderr, snprintf
 #include <string.h> // for NULL, strcpy, strlen, etc
 
 #include "vrpn_Connection.h"   // for vrpn_Connection, etc
@@ -52,11 +52,11 @@ vrpn_SharedObject::vrpn_SharedObject(const char *name, const char *tname,
 {
     if (name) {
         d_name = new char[1 + strlen(name)];
-        strcpy(d_name, name);
+        vrpn_strncpynull(d_name, name, 1 + strlen(name));
     }
     if (tname) {
         d_typename = new char[1 + strlen(tname)];
-        strcpy(d_typename, tname);
+        vrpn_strncpynull(d_typename, tname, 1 + strlen(tname));
     }
     vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
@@ -108,7 +108,7 @@ vrpn_bool vrpn_SharedObject::isSerializer(void) const { return VRPN_TRUE; }
 // virtual
 void vrpn_SharedObject::bindConnection(vrpn_Connection *c)
 {
-    char buffer[101];
+    char buffer[256];
     if (c == NULL) {
         // unbind the connection
         if (d_connection) {
@@ -127,9 +127,9 @@ void vrpn_SharedObject::bindConnection(vrpn_Connection *c)
 
     d_connection = c;
     c->addReference();
-    sprintf(buffer, "vrpn Shared server %s %s", d_typename, d_name);
+    snprintf(buffer, 256, "vrpn Shared server %.100s %.100s", d_typename, d_name);
     d_serverId = c->register_sender(buffer);
-    sprintf(buffer, "vrpn Shared peer %s %s", d_typename, d_name);
+    snprintf(buffer, 256, "vrpn Shared peer %.100s %.100s", d_typename, d_name);
     d_remoteId = c->register_sender(buffer);
     // d_updateFromServer_type = c->register_message_type
     //("vrpn_Shared update_from_server");
@@ -865,10 +865,6 @@ vrpn_Shared_float64::vrpn_Shared_float64(const char *name,
     , d_policyCallback(NULL)
     , d_policyUserdata(NULL)
 {
-
-    if (name) {
-        strcpy(d_name, name);
-    }
     vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
 
@@ -901,7 +897,7 @@ vrpn_Shared_float64 &vrpn_Shared_float64::set(vrpn_float64 newValue,
 void vrpn_Shared_float64::register_handler(vrpnSharedFloatCallback cb,
                                            void *userdata)
 {
-    callbackEntry *e = new callbackEntry;
+    callbackEntry *e = new(std::nothrow) callbackEntry;
     if (!e) {
         fprintf(stderr, "vrpn_Shared_float64::register_handler:  "
                         "Out of memory.\n");
@@ -942,7 +938,7 @@ void vrpn_Shared_float64::unregister_handler(vrpnSharedFloatCallback cb,
 void vrpn_Shared_float64::register_handler(vrpnTimedSharedFloatCallback cb,
                                            void *userdata)
 {
-    timedCallbackEntry *e = new timedCallbackEntry;
+    timedCallbackEntry *e = new(std::nothrow) timedCallbackEntry;
     if (!e) {
         fprintf(stderr, "vrpn_Shared_float64::register_handler:  "
                         "Out of memory.\n");
@@ -1202,7 +1198,7 @@ vrpn_Shared_String::vrpn_Shared_String(const char *name,
                                        const char *defaultValue,
                                        vrpn_int32 mode)
     : vrpn_SharedObject(name, "String", mode)
-    , d_value(defaultValue ? new char[1 + strlen(defaultValue)] : NULL)
+    , d_value(defaultValue ? new(std::nothrow) char[1 + strlen(defaultValue)] : NULL)
     , d_callbacks(NULL)
     , d_timedCallbacks(NULL)
     , d_policy(vrpn_ACCEPT)
@@ -1211,10 +1207,7 @@ vrpn_Shared_String::vrpn_Shared_String(const char *name,
 {
 
     if (defaultValue) {
-        strcpy(d_value, defaultValue);
-    }
-    if (name) {
-        strcpy(d_name, name);
+        vrpn_strncpynull(d_value, defaultValue, 1 + strlen(defaultValue));
     }
     vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
@@ -1369,7 +1362,7 @@ vrpn_Shared_String &vrpn_Shared_String::set(const char *newValue, timeval when,
                 fprintf(stderr, "vrpn_Shared_String::set:  Out of memory.\n");
                 return *this;
             }
-            strcpy(d_value, newValue);
+            vrpn_strncpynull(d_value, newValue, 1 + strlen(newValue));
         }
 
         // fprintf(stderr, "vrpn_Shared_String::set:  %s to \"%s\".\n", name(),
