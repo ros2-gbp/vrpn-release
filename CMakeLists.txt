@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10.0)
 project(VRPN)
 
 #-----------------------------------------------------------------------------
@@ -154,6 +154,7 @@ if(WIN32)
 		endif()
 	endif()
 	add_definitions("-D_WIN32_WINNT=${WIN_MIN_VER}" "-DNTDDI_VERSION=${WIN_MIN_VER}0000")
+	ADD_DEFINITIONS( -D_CRT_SECURE_NO_WARNINGS )
 endif()
 
 #-----------------------------------------------------------------------------
@@ -310,19 +311,15 @@ endif()
 
 # Passing just the major version works with as desired multi-python-capable find module such
 # as in latest CMake (2.8.9)
-find_package(PythonLibs ${_VRPN_PYTHON_VERSIONSEARCH} ${QUIET_IF_SUBPROJECT})
-if(PYTHONLIBS_FOUND)
-	if(PYTHONLIBS_VERSION_STRING)
+find_package(Python ${_VRPN_PYTHON_VERSIONSEARCH} COMPONENTS Development ${QUIET_IF_SUBPROJECT})
+if(Python_Development_FOUND)
+	if(Python_VERSION)
 		string(SUBSTRING
-			${PYTHONLIBS_VERSION_STRING}
+			${Python_VERSION}
 			0
 			1
 			vrpn_python_majorver)
 		set(PYTHON${vrpn_python_majorver}_FOUND ON)
-	elseif(PYTHON_LIBRARY MATCHES "python([23])")
-		set(PYTHON${CMAKE_MATCH_1}_FOUND ON)
-	elseif(_VRPN_PYTHON_VERSIONSEARCH)
-		set(PYTHON${_VRPN_PYTHON_VERSIONSEARCH}_FOUND ON)
 	else()
 		message(STATUS
 			"Warning: found python but couldn't determine which version. Please set either VRPN_PYTHON_IS_3 or VRPN_PYTHON_IS_2")
@@ -353,10 +350,12 @@ option_requires(VRPN_BUILD_PYTHON
 	SWIG_FOUND
 	PYTHON2_FOUND)
 
+if (NOT APPLE)
 option_requires(VRPN_BUILD_PYTHON_HANDCODED_2X
 	"Build VRPN Python handcoded bindings for Python 2.x"
 	${PYTHON_DEFAULT_OFF}
 	PYTHON2_FOUND)
+endif (NOT APPLE)
 
 option_requires(VRPN_BUILD_PYTHON_HANDCODED_3X
 	"Build VRPN Python handcoded bindings for Python 3.x"
@@ -524,7 +523,7 @@ endif()
 ###
 # libi2c-dev
 ###
-find_package(libi2c-dev ${QUIET_IF_SUBPROJECT})
+find_package(I2CDEV ${QUIET_IF_SUBPROJECT})
 option_requires(VRPN_USE_I2CDEV
 	"Build devices requiring libi2c-dev"
 	${DEFAULT_OFF_IF_SUBPROJECT}
@@ -594,7 +593,9 @@ if(WIN32)
 		DIRECTX_DINPUT_INCLUDE_DIR
 		DIRECTX_SDK_SUPPORTS_COMPILER)
 	if(VRPN_USE_DIRECTINPUT)
-		include_directories(${DIRECTX_INCLUDE_DIRS})
+		# This include breaks Visual Studio 2022.  It appears not to
+		# be needed for Visual Studio 2015 and later, so we'll remove it.
+		#include_directories(${DIRECTX_INCLUDE_DIRS})
 		list(APPEND
 			SERVER_EXTRA_LIBS
 			${DIRECTX_DXGUID_LIBRARY}

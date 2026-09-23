@@ -104,8 +104,8 @@ int open_client_connection_and_loop(const char *local_in, const char *local_out,
   //---------------------------------------------------------------------
   // Open a client connection to the server, asking for the logging files
   // requested in the parameters.
-  char name[512];
-  sprintf(name, "%s@localhost:%d", CLIENT_TEXT_NAME, CONNECTION_PORT);
+  char name[1024];
+  snprintf(name, 1024, "%.511s@localhost:%d", CLIENT_TEXT_NAME, CONNECTION_PORT);
   client_connection = vrpn_get_connection_by_name(name, local_in, local_out,
     remote_in, remote_out);
   if (client_connection == NULL) {
@@ -144,8 +144,8 @@ int check_for_messages_in(const char *device_name, const char *file_name)
 {
   //---------------------------------------------------------------------
   // Open a text receiver to connect to the specified input file.
-  char name[512];
-  sprintf(name, "%s@file://%s", device_name, file_name);
+  char name[1024];
+  snprintf(name, 1024, "%.500s@file://%.500s", device_name, file_name);
   printf("Checking for logs in %s\n", name);
   vrpn_Text_Receiver *r = new vrpn_Text_Receiver(name);
   r->register_message_handler(NULL, handle_text);
@@ -180,11 +180,11 @@ int check_for_messages_in(const char *device_name, const char *file_name)
 // files are foo-1 foo-2 fo-3...
 char *make_server_incoming_name(const char *base, int which)
 {
-  char *name = new char[strlen(base) + 30];
+  char *name = new(std::nothrow) char[strlen(base) + 30];
   if (name == NULL) {
     return NULL;
   }
-  sprintf(name, "%s-%d", base, which);
+  snprintf(name, strlen(base) + 30, "%s-%d", base, which);
   return name;
 }
 
@@ -211,8 +211,8 @@ int main (int argc, char * argv [])
 
   //---------------------------------------------------------------------
   // Open the server-side text sender and receivers.
-  server_text_sender = new vrpn_Text_Sender(CLIENT_TEXT_NAME, server_connection);
-  server_text_receiver = new vrpn_Text_Receiver(SERVER_TEXT_NAME, server_connection);
+  server_text_sender = new(std::nothrow) vrpn_Text_Sender(CLIENT_TEXT_NAME, server_connection);
+  server_text_receiver = new(std::nothrow) vrpn_Text_Receiver(SERVER_TEXT_NAME, server_connection);
   if ( (server_text_sender == NULL) || (server_text_receiver == NULL) ) {
     fprintf(stderr,"Cannot create text server or client\n");
     return -3;
@@ -290,8 +290,8 @@ int main (int argc, char * argv [])
 
   //---------------------------------------------------------------------
   // Open the server-side text sender and receivers.
-  server_text_sender = new vrpn_Text_Sender(CLIENT_TEXT_NAME, server_connection);
-  server_text_receiver = new vrpn_Text_Receiver(SERVER_TEXT_NAME, server_connection);
+  server_text_sender = new(std::nothrow) vrpn_Text_Sender(CLIENT_TEXT_NAME, server_connection);
+  server_text_receiver = new(std::nothrow) vrpn_Text_Receiver(SERVER_TEXT_NAME, server_connection);
   if ( (server_text_sender == NULL) || (server_text_receiver == NULL) ) {
     fprintf(stderr,"Cannot create text server or client\n");
     return -3;
