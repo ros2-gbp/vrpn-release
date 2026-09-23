@@ -1,12 +1,10 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.10.0)
 
 #-----------------------------------------------------------------------------
 # XXX Things to make better.
 #
 # XXX clock_drift_estimator
-# Move applications into subprojects in visual studio
 # Make the files with ".c" extension also compile as C++.
-# Make the c_interface_example work
 
 #-----------------------------------------------------------------------------
 # Build the client applications if we've been asked to.
@@ -22,6 +20,7 @@ if(VRPN_BUILD_CLIENTS)
 	find_package(GLUT)
 	if(APPLE)
 		mark_as_advanced(GLUT_cocoa_LIBRARY)
+		add_definitions("-DGL_SILENCE_DEPRECATION")
 	endif()
 	find_package(OpenGL)
 
@@ -146,25 +145,6 @@ if(VRPN_BUILD_CLIENTS)
 
 	endif()
 
-	add_executable(c_interface_example
-		c_interface_example.c
-		c_interface.h
-		c_interface.cpp)
-	target_link_libraries(c_interface_example ${VRPN_CLIENT_LIBRARY})
-
-	set_target_properties(c_interface_example PROPERTIES FOLDER Tests)
-
-	if(VRPN_INSTALL)
-		install(TARGETS
-			c_interface_example
-			RUNTIME
-			DESTINATION
-			bin
-			COMPONENT
-			tests)
-	endif()
-
-
 	###
 	# Clients
 	###
@@ -179,6 +159,15 @@ if(VRPN_BUILD_CLIENTS)
 			install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT clients)
 		endif()
 	endforeach()
+
+	add_executable(c_interface_example
+		c_interface_example.c
+		c_interface.h
+		c_interface.cpp)
+	target_link_libraries(c_interface_example ${VRPN_CLIENT_LIBRARY})
+
+	set_target_properties(c_interface_example PROPERTIES FOLDER Clients)
+  # We do not install this; it is an example program.
 
 	###
 	# Servers

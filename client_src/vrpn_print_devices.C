@@ -237,12 +237,10 @@ int main(int argc, char *argv[])
     device_info device_list[MAX_DEVICES];
     unsigned num_devices = 0;
 
-    int i;
-
     // Parse arguments, creating objects as we go.  Arguments that
     // change the way a device is treated affect all devices that
     // follow on the command line.
-    for (i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-notracker")) {
             print_for_tracker = 0;
         }
@@ -281,11 +279,11 @@ int main(int argc, char *argv[])
             // Name the device and open it as everything
             dev = &device_list[num_devices];
             dev->name = argv[i];
-            dev->tkr = new vrpn_Tracker_Remote(dev->name);
-            dev->ana = new vrpn_Analog_Remote(dev->name);
-            dev->btn = new vrpn_Button_Remote(dev->name);
-            dev->dial = new vrpn_Dial_Remote(dev->name);
-            dev->text = new vrpn_Text_Receiver(dev->name);
+            dev->tkr = new(std::nothrow) vrpn_Tracker_Remote(dev->name);
+            dev->ana = new(std::nothrow) vrpn_Analog_Remote(dev->name);
+            dev->btn = new(std::nothrow) vrpn_Button_Remote(dev->name);
+            dev->dial = new(std::nothrow) vrpn_Dial_Remote(dev->name);
+            dev->text = new(std::nothrow) vrpn_Text_Receiver(dev->name);
             if ((dev->ana == NULL) || (dev->btn == NULL) ||
                 (dev->dial == NULL) || (dev->tkr == NULL) ||
                 (dev->text == NULL)) {
@@ -301,9 +299,9 @@ int main(int argc, char *argv[])
             // the correct data for this device.
             if (print_for_tracker) {
                 vrpn_Tracker_Remote *tkr = dev->tkr;
-                t_user_callback *tc1 = new t_user_callback;
-                t_user_callback *tc2 = new t_user_callback;
-                t_user_callback *tc3 = new t_user_callback;
+                t_user_callback *tc1 = new(std::nothrow) t_user_callback;
+                t_user_callback *tc2 = new(std::nothrow) t_user_callback;
+                t_user_callback *tc3 = new(std::nothrow) t_user_callback;
 
                 if ((tc1 == NULL) || (tc2 == NULL) || (tc3 == NULL)) {
                     fprintf(stderr, "Out of memory\n");
@@ -368,10 +366,9 @@ int main(int argc, char *argv[])
      */
     printf("Press ^C to exit.\n");
     while (!done) {
-        unsigned i;
 
         // Let all the devices do their things
-        for (i = 0; i < num_devices; i++) {
+        for (unsigned i = 0; i < num_devices; i++) {
             device_list[i].tkr->mainloop();
             device_list[i].btn->mainloop();
             device_list[i].ana->mainloop();
