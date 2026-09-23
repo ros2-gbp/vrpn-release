@@ -52,7 +52,7 @@ int main (int argc, const char *argv[])
 
 	vrpn_Connection * connection = vrpn_create_server_connection();
 	// Create the joystick for analog and buttons
-	vrpn_DirectXFFJoystick *joyServer = new vrpn_DirectXFFJoystick(handTrackerName,
+	vrpn_DirectXFFJoystick *joyServer = new(std::nothrow) vrpn_DirectXFFJoystick(handTrackerName,
                                        connection, 200, 200);
         if (joyServer==NULL) {
 	  fprintf(stderr, "Could not create Joystick\n");
@@ -63,7 +63,7 @@ int main (int argc, const char *argv[])
 	// We put "*" in the name to indicate that it should use the same
 	// connection.
 	char  analogName[1024];
-	sprintf(analogName, "*%s", (char*)handTrackerName);
+	snprintf(analogName, 1024, "*%.1022s", (char*)handTrackerName);
 	vrpn_Tracker_AnalogFlyParam afp;
 	afp.x.name = (char*)analogName;
 	afp.x.channel = 0;
@@ -74,7 +74,7 @@ int main (int argc, const char *argv[])
 	afp.y = afp.x; afp.y.channel = 1; afp.y.scale = (float)-0.07;
 	afp.z = afp.x; afp.z.channel = 6; afp.z.scale = (float)0.2; afp.z.offset = (float)1.5;
 	afp.sz = afp.x; afp.sz.channel = 5; afp.sz.scale = (float)0.06;
-	vrpn_Tracker_AnalogFly *joyflyServer = new vrpn_Tracker_AnalogFly((char*) handTrackerName,
+	vrpn_Tracker_AnalogFly *joyflyServer = new(std::nothrow) vrpn_Tracker_AnalogFly((char*) handTrackerName,
 				connection, &afp, 200, vrpn_true);
         if (joyflyServer==NULL) {
 	  fprintf(stderr, "phantom_init(): Could not create AnalogFly\n");
