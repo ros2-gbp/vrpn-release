@@ -1573,3 +1573,14 @@ if(VRPN_INSTALL)
 	cpack_add_component(java DISPLAY_NAME "Java bindings")
 	cpack_add_component(doc DISPLAY_NAME "C++ API Documentation")
 endif()
+
+# install ament package.xml
+install(FILES package.xml DESTINATION share/vrpn)
+
+install(FILES cmake/FindVRPN.cmake
+        DESTINATION share/vrpn/cmake
+        RENAME VRPNConfig.cmake)
+
+install(FILES cmake/Findquatlib.cmake
+        DESTINATION share/quatlib/cmake
+        RENAME quatlibConfig.cmake)
