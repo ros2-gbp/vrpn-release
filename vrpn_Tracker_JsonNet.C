@@ -120,7 +120,8 @@ void vrpn_Tracker_JsonNet::mainloop()
 		int len = vrpn_Tracker::encode_to(msgbuf);
 		if (d_connection->pack_message(len, ts, position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
 			// error
-		}
+                    return;
+                }
 		_do_tracker_report = false;
 		//fprintf(stderr, "Packed and sent\n");
 	}
@@ -338,7 +339,7 @@ bool vrpn_Tracker_JsonNet::_network_init(int udp_port)
 
 #ifdef _WIN32
 	{
-		// Create a SOCKET for connecting to server
+		// Create a vrpn_SOCKET for connecting to server
 		_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		if (_socket == INVALID_SOCKET) {
 		    printf("socket failed with error: %ld\n", WSAGetLastError());
